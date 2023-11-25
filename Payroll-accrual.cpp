@@ -4,42 +4,51 @@
 #include <vector>
 using namespace std;
 
+// Базовий клас Experience
 class Experience {
 private:
     int hireYear;
 
 public:
-    // Constructor with parameter
+    // Конструктор з параметром
     Experience(int hireYear) : hireYear(hireYear) {}
 
-    // Function to calculate experience
-    int calculateExperience() const {
+    // Функція для обчислення робочого досвіду
+    virtual int calculateExperience() const {
         int currentYear = 2023;
         return currentYear - hireYear;
     }
 };
 
-class Employee {
+// Похідний клас Employee, який розширює клас Experience
+class Employee : public Experience {
 private:
     std::string name;
     std::string position;
-    Experience experience;  // Add an instance of Experience
     double salary;
 
 public:
-    // Constructor without parameters
-    Employee() : name(""), position(""), experience(0), salary(0.0) {}
+    // Конструктор без параметрів
+    Employee() : Experience(0), name(""), position(""), salary(0.0) {}
 
-    // Constructor with parameters
+    // Конструктор з параметрами
     Employee(const std::string& name, const std::string& position, int hireYear, double salary)
-        : name(name), position(position), experience(hireYear), salary(salary) {}
+        : Experience(hireYear), name(name), position(position), salary(salary) {}
 
+    // Деструктор
     ~Employee() {
-        // You can add cleanup code here if needed
+        // Можна додати код очищення, якщо потрібно
     }
 
+    // Перевизначений метод для обчислення робочого досвіду
+    int calculateExperience() const override {
+        // Тут можна додати специфічну логіку для Employee, якщо необхідно
+        return Experience::calculateExperience();
+    }
+
+    // Функція для отримання зарплати
     double getSalary() const {
-        int experienceYears = experience.calculateExperience();
+        int experienceYears = calculateExperience();
 
         if (experienceYears >= 5 && experienceYears < 10) {
             return salary * 1.05;
@@ -55,11 +64,8 @@ public:
         }
     }
 
-    int getExperience() const {
-        return experience.calculateExperience();
-    }
-
-    const std::string& getName() const {
+    // Функція для отримання ім'я працівника
+    const string& getName() const {
         return name;
     }
 };
@@ -68,10 +74,10 @@ int main() {
     setlocale(LC_ALL, "UKR");
     vector<Employee> employees;
 
-    // Loading data from the file (if the file exists)
-    std::ifstream inputFile("employees.txt");
+    // Завантаження даних з файлу (якщо файл існує)
+    ifstream inputFile("employees.txt");
     if (inputFile.is_open()) {
-        std::string name, position;
+        string name, position;
         int hireYear;
         double salary;
 
@@ -82,14 +88,14 @@ int main() {
     }
 
     int minExperience;
-    cout << "Enter minimum work experience: ";
+    cout << "Введіть мінімальний робочий досвід: ";
     cin >> minExperience;
 
-    // Display on the screen and write to a file
+    // Вивід на екран та запис у файл
     ofstream outputFile("filtered_employees.txt");
     bool foundEmployees = false;
     for (const Employee& emp : employees) {
-        if (emp.getExperience() >= minExperience) {
+        if (emp.calculateExperience() >= minExperience) {
             cout << emp.getName() << " - " << emp.getSalary() << endl;
             outputFile << emp.getName() << " - " << emp.getSalary() << endl;
             foundEmployees = true;
@@ -97,7 +103,7 @@ int main() {
     }
 
     if (!foundEmployees) {
-        cout << "Employees with such experience not found." << endl;
+        cout << "Працівників із таким робочим досвідом не знайдено." << endl;
     }
 
     outputFile.close();
